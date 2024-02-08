@@ -1,0 +1,465 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['SESSION_EMAIL'])) {
+        header("Location: index.php");
+        die();
+    }
+
+    include 'config.php';
+
+    $query = mysqli_query($conn, "SELECT * FROM users WHERE email='{$_SESSION['SESSION_EMAIL']}'");
+
+    if (mysqli_num_rows($query) > 0) {
+        $row = mysqli_fetch_assoc($query);
+    }
+
+    // Check if the form for applying promo is submitted
+    if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['promoType'])) {
+        $prodIDPromo = isset($_POST['prodIDPromo']) ? intval($_POST['prodIDPromo']) : 0;
+        $promoType = mysqli_real_escape_string($conn, $_POST['promoType']);
+
+        if ($prodIDPromo <= 0) {
+            exit("Invalid or missing product ID");
+        }
+
+        // Retrieve product details
+        $sqlPromo = "SELECT * FROM manage_product WHERE prodID = $prodIDPromo LIMIT 1";
+        $resultPromo = mysqli_query($conn, $sqlPromo);
+        $rowPromo = mysqli_fetch_assoc($resultPromo);
+
+        if (!$rowPromo) {
+            exit("Product not found");
+        }
+
+        // Check the selected promo type
+        if ($promoType === 'noPromo') {
+            // Revert back to original price
+            $newPrice = $rowPromo['originalPrice'];
+
+            // Update the prodPromo column in manage_product table to NULL or default value
+            $updatePromoSql = "UPDATE manage_product SET prodPromo = NULL WHERE prodID = $prodIDPromo";
+            mysqli_query($conn, $updatePromoSql);
+        } else {
+            // Calculate the new discounted price
+            $newPrice = $rowPromo['prodPrice'] * (1 - ($promoType / 100));
+
+            // Update the prodPromo column in manage_product table
+            $updatePromoSql = "UPDATE manage_product SET prodPromo = $promoType WHERE prodID = $prodIDPromo";
+            mysqli_query($conn, $updatePromoSql);
+        }
+
+        // Update product price in manage_product table
+        $updatePriceSql = "UPDATE manage_product SET prodPrice = $newPrice WHERE prodID = $prodIDPromo";
+        mysqli_query($conn, $updatePriceSql);
+
+        header("location: soon-to-expire.php?msg=Promo applied successfully");
+        exit();
+    }
+
+
+
+    // Check if the form for marking product as sold is submitted
+    if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['soldAmount'])) {
+        $prodID = isset($_POST['prodID']) ? intval($_POST['prodID']) : 0;
+        $soldAmount = mysqli_real_escape_string($conn, $_POST['soldAmount']);
+
+        if ($prodID <= 0) {
+            exit("Invalid or missing product ID");
+        }
+
+        // Retrieve product details
+        $sql = "SELECT * FROM manage_product WHERE prodID = $prodID LIMIT 1";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (!$row) {
+            exit("Product not found");
+        }
+
+        // Ensure sold amount does not exceed available quantity
+        if ($soldAmount > $row['prodQuan']) {
+            echo "<script>
+                    alert('Error: Sold amount exceeds available quantity.');
+                    window.location.href='soon-to-expire.php';
+                  </script>";
+            exit();
+        }
+
+        // Calculate the new sold price
+        $newSoldPrice = $row['prodPrice'] * $soldAmount;
+
+        // Check if the record already exists in sold_items
+        $checkSql = "SELECT * FROM sold_items WHERE prodID = $prodID";
+        $checkResult = mysqli_query($conn, $checkSql);
+
+        if (mysqli_num_rows($checkResult) > 0) {
+            // Update existing record
+            $updateSql = "UPDATE sold_items SET prodAmountSold = prodAmountSold + $soldAmount, soldPrice = soldPrice + $newSoldPrice, prodCate = '{$row['prodCate']}' WHERE prodID = $prodID";
+            mysqli_query($conn, $updateSql);
+        } else {
+            // Insert new record
+            $insertSql = "INSERT INTO sold_items (prodID, prodName, prodAmountSold, soldPrice, prodCate, soldDate) VALUES ($prodID, '{$row['prodName']}', $soldAmount, $newSoldPrice, '{$row['prodCate']}', CURRENT_DATE)";
+            mysqli_query($conn, $insertSql);
+        }
+
+        // Update product amount sold and subtract from the remaining product amount
+        $updateProductSql = "UPDATE manage_product SET prodAmountSold = prodAmountSold + $soldAmount, prodQuan = prodQuan - $soldAmount WHERE prodID = $prodID";
+        mysqli_query($conn, $updateProductSql);
+
+        header("location: soon-to-expire.php?msg=Product marked as sold successfully");
+        exit();
+    }
+?>
+
+<!DOCTYPE php>
+<!-- Group 3 | Project -->
+<php lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8" />
+    <title>GrocerEase</title>
+    <link rel="stylesheet" href="assets/css/grocerease.css" />
+    <link rel="stylesheet" href="assets/css/product-list.css">
+    <!-- Boxicons CDN Link -->
+    <link
+    href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css"
+    rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="assets/images/favicon.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon" />
+</head>
+
+<body>
+<div class="sidebar">
+        <div class="logo-details">
+            <img src="assets/images/favicon.png" alt="Logo" />
+            <span class="logo_name">GrocerEase</span>
+        </div>
+        <ul class="nav-links">
+            <li>
+            <a href="grocerease.php">
+                <i class="bx bx-grid-alt"></i>
+                <span class="links_name">Dashboard</span>
+            </a>
+            </li>
+            <li>
+            <a href="user-setting.php  ">
+                <i class="bx bx-user"></i>
+                <span class="links_name">Users</span>
+            </a>
+            </li>
+            <li>
+            <a href="product-list.php">
+                <i class="bx bx-list-ul"></i>
+                <span class="links_name">Product List</span>
+            </a>
+            </li>
+            <li>
+            <a href="manage.php">
+                <i class="bx bx-receipt"></i>
+                <span class="links_name">Manage Product</span>
+            </a>
+            </li>
+            <li>
+            <a href="soon-to-expire.php" class="active">
+                <i class="bx bx-purchase-tag"></i>
+                <span class="links_name">Soon to Expire</span>
+            </a>
+            </li>
+            <li>
+            <a href="expired-product.php" >
+                <i class="bx bxs-purchase-tag"></i>
+                <span class="links_name">Expired Product</span>
+            </a>
+            </li>
+            <li>
+            <a href="help-support.php">
+                <i class="bx bx-phone"></i>
+                <span class="links_name">Help and Support</span>
+            </a>
+            </li>
+            <li>
+            <a href="settings.php">
+                <i class="bx bx-cog"></i>
+                <span class="links_name">Settings</span>
+            </a>
+            </li>
+            <!-- Log out -->
+            <li class="log_out">
+                <a href="#">
+                <i class="bx bx-log-out"></i>
+                <span class="links_name">Log out</span>
+                </a>
+            </li>
+            </ul>
+        </div>
+    
+        <!-- Logout Confirmation Popup -->
+        <div id="logout-popup" class="popup">
+            <div class="popup-content">
+                <h3>Logout Confirmation</h3>
+                <p>Are you sure you want to logout?</p>
+                <div class="popup-buttons">
+                <a href='logout.php'>Yes</a>
+                <button id="cancel-logout">No</button>
+                </div>
+            </div>
+        </div>
+
+    <!-- Logout Confirmation Popup -->
+    <div id="logout-popup" class="popup">
+        <div class="popup-content">
+            <h3>Logout Confirmation</h3>
+            <p>Are you sure you want to logout?</p>
+            <div class="popup-buttons">
+            <a href='logout.php'>Yes</a>
+            <button id="cancel-logout">No</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="home-section">
+        <nav>
+            <div class="sidebar-button">
+                <i class="bx bx-menu sidebarBtn"></i>
+                <span class="dashboard">Soon to Expire</span>    
+            </div>
+            
+          
+            <!-- Search bar -->
+            <div class="relative h-50 max-w-650 w-[800]">
+            <form method="GET" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                <input type="search" name="search" class="block w-full p-3 pl-3.5 text-xl text-gray-900 border border-gray-300 rounded-lg bg-[#f5f6fa] outline-none" placeholder="Search..." required>
+                <button type="submit" class="text-white absolute bg-blue-700 top-1 right-1 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-3 "><i class="bx bx-search text-white text-2xl"></i></button>
+            </form>
+            </div>
+  
+            <!-- Notifications -->
+            <div class="three-box">
+                <div class="notifications">
+                    <div class="notification-icon">
+                        <i class="bx bx-bell"></i>
+                        <span class="notification-count">3</span>
+                        <div class="notification-dropdown">
+                        <ul class="notification-list">
+                        <?php
+                        // Fetch top 3 latest notifications from the database
+                        $topNotificationsQuery = "SELECT * FROM notifications ORDER BY date DESC LIMIT 3";
+                        $topNotificationsResult = mysqli_query($conn, $topNotificationsQuery);
+
+                        while ($notificationRow = mysqli_fetch_assoc($topNotificationsResult)) {
+                            echo "<li>";
+                            echo "<span class='notification-title'>{$notificationRow['type']}</span>";
+                            echo "<span class='notification-time'>" . date("d/m/Y", strtotime($notificationRow['date'])) . "</span>";
+                            echo "</li>";
+                        }
+                        ?>
+                        </ul>
+                        <a href="notification.php">
+                            <button class="check-notifications">Check all Notifications</button>
+                        </a>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Dark/Light Mode Toggle -->
+                <div id="dark-mode-icon" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+  
+                <!-- User-Profile -->
+                <div class="profile-details">
+                    <img id="user-profile-icon" src="assets/images/default-icon.png" alt="User Profile Icon">
+                    <div class="names">
+                    <span id="user-name" class="user_name"><?php echo $row['name']; ?></span>
+                    <span class="admin_name">Admin</span>
+                    </div>
+                </div>
+            </div>
+            
+        </nav>
+
+        <div class="table-container-1">
+            <h1 class="title-1">Soon To Expire List</h1>
+            <table>
+                    <thead>
+                        <tr>
+                            <th>Product<br>ID</th>
+                            <th>Product Name</th>
+                            <th>Product Category</th>
+                            <th>Quantity</th>
+                            <th>Product Price</th>
+                            <th>Manufacturer</th>
+                            <th>Manufactured<br>Date</th>
+                            <th>Expiration Date</th>
+                            <th>Promo %</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                            $queryTwo = "SELECT * FROM manage_product WHERE expiDate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 2 WEEK)";
+                            $resultTwo = mysqli_query($conn, $queryTwo);
+                            
+                            if(isset($_GET['search'])) {
+                                $search = $_GET['search'];
+              
+                                $queryTwo = "SELECT * FROM manage_product WHERE (prodID LIKE '%$search%' OR prodName LIKE '%$search%' OR prodCate LIKE '%$search%') AND expiDate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 2 WEEK)";
+                            }
+
+                            if ($result = mysqli_query($conn, $queryTwo)) {
+                                if (mysqli_num_rows($result) > 0) {
+                                    $count = 1;
+                                    while ($rowTwo = mysqli_fetch_assoc($result)) { 
+                                        $prodID = $rowTwo['prodID'];
+                                        
+                                        // Check if the product is soon-to-expire
+                                        $isSoonToExpire = strtotime($rowTwo['expiDate']) <= strtotime('+2 weeks');
+
+                                        // Check if a notification for the product name already exists
+                                        $prodName = mysqli_real_escape_string($conn, $rowTwo['prodName']);
+                                        $existingNotificationQuery = "SELECT * FROM notifications WHERE type='Soon to Expire' AND message LIKE '%$prodName%'";
+                                        $existingNotificationResult = mysqli_query($conn, $existingNotificationQuery);
+
+                                        if ($isSoonToExpire && mysqli_num_rows($existingNotificationResult) == 0) {
+                                            $insertNotificationQuery = "INSERT INTO notifications (type, message) VALUES ('Soon to Expire', 'Product ({$prodName}) is soon to expire in 2 weeks.');";
+                                            mysqli_query($conn, $insertNotificationQuery);
+                                        }
+
+                                        // Free the result set
+                                        mysqli_free_result($existingNotificationResult);
+                                        ?> 
+                                        <tr>
+                                            <td><?php echo $rowTwo['prodID']; ?></td>
+                                            <td><?php echo $rowTwo['prodName']; ?></td>
+                                            <td><?php echo $rowTwo['prodCate']; ?></td>
+                                            <td><?php echo $rowTwo['prodQuan']; ?></td>
+                                            <td data-price="<?php echo $rowTwo['prodPrice']; ?>">₱<?php echo $rowTwo['prodPrice']; ?></td>
+                                            <td><?php echo $rowTwo['manufact']; ?></td>
+                                            <td><?php echo $rowTwo['manuDate']; ?></td>
+                                            <td><?php echo $rowTwo['expiDate']; ?></td>
+                                            <td><?php echo $rowTwo['prodPromo']; ?></td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a href='soon-to-expire-delete.php?id=<?php echo $rowTwo['prodID']; ?>' class="delete-btn"><i class='fas fa-trash-alt fs-5'></i></a>
+                                                    <a href="#" class="sold-btn" onclick="showSoldPopup(<?php echo $rowTwo['prodID']; ?>)"><i class='fas fa-shopping-cart fs-5'></i></a>
+                                                    <!-- Pop-up Content -->
+                                                    <div id="sold-popup" class="popup">
+                                                        <div class="popup-content">
+                                                            <form id="sellForm" method="POST" class="mt-4 p-4 border border-gray-300 rounded-lg shadow-md">
+                                                                <div class="mb-4">
+                                                                    <label for="soldAmount" class="block text-sm font-medium text-gray-600">Sold Amount:</label>
+                                                                    <input type="number" id="soldAmount" name="soldAmount" min="0" oninput="validity.valid||(value='');" required
+                                                                            class="mt-1 p-2 block w-full border border-gray-300 rounded-md bg-gray-100 focus:ring-0 focus:border-blue-500">
+                                                                </div>
+
+                                                                <!-- Add hidden input fields for other necessary data -->
+                                                                <input type="hidden" id="prodID" name="prodID" value="">
+
+                                                                <div class="flex items-center justify-between">
+                                                                    <button type="submit"
+                                                                            class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                                        Mark as Sold
+                                                                    </button>
+                                                                    <button type="button" onclick="closeSoldPopup()"
+                                                                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                    <!-- New "promo-btn" -->
+                                                    <a href="#" class="promo-btn" onclick="showPromoPopup(<?php echo $rowTwo['prodID']; ?>)"><i class='fas fa-tag fs-5'></i></a>
+                                                    
+                                                <!-- Popup Content for Promo -->
+                                                <div id="promo-popup" class="popup">
+                                                    <div class="popup-content">
+                                                        <form id="promoForm" method="POST" class="mt-4 p-4 border border-gray-300 rounded-lg shadow-md">
+                                                            <div class="mb-4">
+                                                                <label for="promoType" class="block text-sm font-medium text-gray-600">Select Promo:</label>
+                                                                <select id="promoType" name="promoType" required class="mt-1 p-2 block w-full border border-gray-300 rounded-md bg-gray-100 focus:ring-0 focus:border-blue-500">
+                                                                    <option value="noPromo" <?php echo (isset($rowPromo['prodPromo']) && $rowPromo['prodPromo'] === null) ? 'selected' : ''; ?>>No Promo</option>
+                                                                    <option value="50" <?php echo (isset($rowPromo['prodPromo']) && $rowPromo['prodPromo'] === '50') ? 'selected' : ''; ?>>50% off</option>
+                                                                    <option value="20" <?php echo (isset($rowPromo['prodPromo']) && $rowPromo['prodPromo'] === '20') ? 'selected' : ''; ?>>20% off</option>
+                                                                    <option value="5" <?php echo (isset($rowPromo['prodPromo']) && $rowPromo['prodPromo'] === '5') ? 'selected' : ''; ?>>5% off</option>
+                                                                </select>
+                                                            </div>
+
+                                                            <!-- Add hidden input fields for other necessary data -->
+                                                            <input type="hidden" id="prodIDPromo" name="prodIDPromo" value="">
+
+                                                            <div class="flex items-center justify-between">
+                                                                <button type="submit"
+                                                                        class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                                    Apply Promo
+                                                                </button>
+                                                                <button type="button" onclick="closePromoPopup()"
+                                                                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php
+                                    }
+                                } else { ?>
+                                    <tr>
+                                        <td colspan="9">** No records were found **</td>
+                                    </tr>
+                                <?php
+                                }
+                                # Free result set
+                                mysqli_free_result($result);
+                            } else {
+                                echo "Error executing the query: " . mysqli_error($conn);
+                            }
+                    
+                            # Close connection
+                            mysqli_close($conn);
+                        ?>
+                    </tbody>
+                </table>
+        </div>
+    </section>
+
+    <script src="https://kit.fontawesome.com/81d73e8e4d.js" crossorigin="anonymous"></script>
+    <script src="assets/js/grocerease.js"></script>
+    <script type="module" src="assets/js/expired-product.mjs"></script>
+    <script src="assets/js/settings.js"></script>
+    <script>
+      function showSoldPopup(prodID) {
+          // Set the product ID in the hidden input
+          document.querySelector("#prodID").value = prodID;
+
+          // Show the pop-up
+          document.getElementById("sold-popup").style.display = "block";
+      }
+
+      function closeSoldPopup() {
+          // Hide the pop-up
+          document.getElementById("sold-popup").style.display = "none";
+      }
+      function showPromoPopup(prodID) {
+        // Set the product ID in the hidden input
+        document.querySelector("#prodIDPromo").value = prodID;
+
+        // Show the pop-up
+        document.getElementById("promo-popup").style.display = "block";
+    }
+
+    function closePromoPopup() {
+        // Hide the pop-up
+        document.getElementById("promo-popup").style.display = "none";
+    }
+  </script>
+</body>
+</php>

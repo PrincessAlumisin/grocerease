@@ -1,0 +1,300 @@
+/* Card Style */
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px; 
+  margin-bottom: 30px;
+  margin-left: 70px;
+  margin-right: 70px;
+}
+
+.card-title {
+  font-size: 25px; 
+  font-weight: 600;
+  margin-bottom: 12px; 
+}
+
+.card-body {
+  margin-top: 8px; 
+}
+
+/* Form Group Style */
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px; 
+  margin-top: 40px;
+}
+
+.form-group label {
+  flex-basis: 200px;
+  font-weight: 500;
+  font-size: 18px;
+  margin-bottom: 12px; 
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group select {
+  flex-grow: 1;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  height: 50px;
+  background-color: #f5f6fa;
+}
+
+/* Input Group Style */
+.input-group {
+  display: flex;
+  align-items: center;
+}
+
+.input-group .input-group-addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  font-size: 14px; 
+  border: 1px solid #ccc;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  background-color: #f9f9f9;
+  user-select: none;
+  pointer-events: none;
+}
+
+.input-group .input-group-addon.currency-symbol {
+  order: -1; 
+  margin-right: 8px; 
+  border: none; 
+  font-size: 20px; 
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.input-group .input-group-addon.currency-symbol::before {
+  font-weight: bold;
+}
+
+.input-group .form-control {
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+
+input::placeholder {
+  color: #808080; 
+  opacity: 0.6; 
+}
+
+#product-category option[disabled]:first-child {
+  color: #808080;
+}
+
+/* Add Button Style */
+.home-content {
+  position: relative;
+  padding-bottom: 100px;
+}
+
+.button-container {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.apply-changes-btn {
+  background-color: #0056b3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  position: absolute;
+  transform: translateX(-50%);
+  left: 50%;
+  bottom: 40px;
+}
+
+.icon-select-btn:hover,
+.apply-changes-btn:hover {
+  background-color: #695CFE;
+}
+
+.icon-select-btn {
+  background-color: #0056b3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.icon-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 10px;
+  max-width: 600px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.icon-grid img {
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+.icon-grid img:hover {
+  opacity: 0.8;
+}
+
+.icon-popup.show {
+  display: flex;
+}
+
+
+/* Styles for dark mode */
+.dark-mode .card {
+  background-color: #262932;
+}
+
+.dark-mode .icon-grid,
+.dark-mode .form-group input[type="text"],
+.dark-mode .form-group input[type="email"],
+.dark-mode .form-group input[type="password"],
+.dark-mode .form-group select {
+  background: #1d1e26;
+  border-color: #000;
+  color: #fff;
+}
+
+.dark-mode input::placeholder {
+  color: #aaa;
+}
+
+.dark-mode .input-group .input-group-addon.currency-symbol {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.dark-mode .card-title,
+.dark-mode .form-group label,
+.dark-mode .apply-changes-btn,
+.dark-mode .input-group .input-group-addon,
+.dark-mode .input-group .input-group-addon.currency-symbol {
+  color: #fff;
+}
+
+.dark-mode .apply-changes-btn {
+  background-color: #0056b3;
+}
+
+.dark-mode .apply-changes-btn:hover {
+  background-color: #695CFE;
+}
+
+/* Media Queries */
+@media (max-width: 1150px) {
+  .card {
+    margin-left: 40px;
+    margin-right: 40px;
+  }
+
+  .apply-changes-btn {
+    display: block;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .card {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .apply-changes-btn {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+}
+
+@media (max-width: 550px) {
+  .card {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .card-title {
+    font-size: 20px; 
+    font-weight: 500;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .apply-changes-btn {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"],
+  .form-group select {
+    height: 40px;
+  }
+
+  .apply-changes-btn {
+    font-size: 15px;
+  }
+
+  .icon-select-btn {
+    font-size: 15px;
+    display: block;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .apply-changes-btn {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+}

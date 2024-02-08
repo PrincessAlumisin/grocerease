@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container-x {
+    margin-top: 30px;
+    padding: 100px 50px;
+}
+
+.title-x {
+    font-size: 25px;
+    margin-bottom: 15px;
+}
+
+thead tr th{
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 1;
+    padding: 5px;
+    vertical-align: top;
+    border: 1px solid #000;
+    background-color: #695CFE;
+}
+
+tbody tr td {
+    font-size: 16px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #000;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #0000000b;
+}
+
+tbody tr:hover {
+    background-color: #fff6;
+}
+
+.dark-mode .previous-1 {
+    background-color: #262932;
+    color: #262932;
+}
+
+.dark-mode tbody tr td {
+    border: 1px solid #fff;
+}
+
+/* End Table Styles */
+
+@keyframes fadeInPage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media(max-width: 700px) {
+    table th, table td {
+        font-size: 12px;
+    }
+}
+  
+@media(max-width: 1150px) {
+    nav .sidebar-button .dashboard {
+        display: none;
+    }
+}
+ 
+.box select {
+    background-color: rgba(104, 85, 224, 1);
+    color: white;
+    padding: 8.5px;
+    width: 150px;
+    font-size: 15px;
+    -webkit-appearance: button;
+    appearance: button;
+    outline: none;
+    border-radius: 0.225rem;
+  }
+  
+  .box::before {
+    text-align: center;
+    font-size: 28px;
+    line-height: 45px;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+  }
+  
+  .box:hover::before {
+    color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .box select option {
+    padding: 30px;
+  } 

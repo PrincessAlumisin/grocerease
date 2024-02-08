@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container-1 {
+    padding: 100px 50px;
+}
+
+.title-1 {
+    font-size: 25px;
+    margin-bottom: 15px;
+}
+
+thead tr th{
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 1;
+    padding: 5px;
+    vertical-align: top;
+    border: 1px solid #000;
+    background-color: #695CFE;
+}
+
+tbody tr td {
+    font-size: 16px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #000;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #0000000b;
+}
+
+tbody tr:hover {
+    background-color: #fff6;
+}
+
+.dark-mode tbody tr td {
+    border: 1px solid #fff;
+}
+
+@media (max-width: 768px) {
+    table thead {
+        display: none;
+    }
+    table, table tbody, table tr, table td {
+        display: block;
+        width: 100%;
+    }
+    table tr {
+        margin-bottom: 15px;
+    }
+    table tbody tr td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+    table td:before {
+        content: attr(data-table);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: left;
+    }
+}
+
+@media (max-width: 550px) {
+    table thead {
+        display: none;
+    }
+    table, table tbody, table tr, table td {
+        display: block;
+        width: 100%;
+    }
+    table tr {
+        margin-bottom: 15px;
+    }
+    table tbody tr td {
+        text-align: right;
+        padding-left: 60%;
+        position: relative;
+    }
+    table td:before {
+        content: attr(data-table);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: 500;
+        font-size: 14px;
+        text-align: left;
+    }
+}
